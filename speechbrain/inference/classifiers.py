@@ -67,7 +67,7 @@ class EncoderClassifier(Pretrained):
         "classifier",
     ]
 
-    def encode_batch(self, wavs, wav_lens=None, normalize=False):
+    def encode_batch(self, wavs, wav_lens=None, normalize=False, output_hidden_states=False):
         """Encodes the input audio into a single vector embedding.
 
         The waveforms should already be in the model's desired format.
@@ -109,7 +109,7 @@ class EncoderClassifier(Pretrained):
         # Computing features and embeddings
         feats = self.mods.compute_features(wavs)
         feats = self.mods.mean_var_norm(feats, wav_lens)
-        embeddings = self.mods.embedding_model(feats, wav_lens)
+        embeddings = self.mods.embedding_model(feats, wav_lens, output_hidden_states)
         if normalize:
             embeddings = self.hparams.mean_var_norm_emb(
                 embeddings, torch.ones(embeddings.shape[0], device=self.device)

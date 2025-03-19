@@ -517,7 +517,7 @@ class ECAPA_TDNN(torch.nn.Module):
             kernel_size=1,
         )
 
-    def forward(self, x, lengths=None):
+    def forward(self, x, lengths=None, output_hidden_states=False):
         """Returns the embedding vector.
 
         Arguments
@@ -555,7 +555,11 @@ class ECAPA_TDNN(torch.nn.Module):
         x = self.fc(x)
 
         x = x.transpose(1, 2)
-        return x
+
+        if (output_hidden_states):
+            return x, xl
+        else:
+            return x
 
 
 class Classifier(torch.nn.Module):
