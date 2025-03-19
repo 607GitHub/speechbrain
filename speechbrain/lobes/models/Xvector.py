@@ -91,7 +91,7 @@ class Xvector(torch.nn.Module):
             )
         )
 
-    def forward(self, x, lens=None):
+    def forward(self, x, lens=None, output_hidden_states=False):
         """Returns the x-vectors.
 
         Arguments
@@ -100,6 +100,10 @@ class Xvector(torch.nn.Module):
             Inputs features for extracting x-vectors.
         lens : torch.Tensor
             The corresponding relative lengths of the inputs.
+        output_hidden_states : bool
+            If True, returns hidden representations of each block as well
+            as final embeddings, as a tuple (embedding, hidden), with
+            hidden a list of Tensors.
 
         Returns
         -------
@@ -107,12 +111,20 @@ class Xvector(torch.nn.Module):
             X-vectors.
         """
 
+        if output_hidden_states: hidden = []
         for layer in self.blocks:
             try:
                 x = layer(x, lengths=lens)
             except TypeError:
                 x = layer(x)
-        return x
+            if output_hidden_states:
+                if (x.shape[1] > 1): # Don't include pooled representation or final embedding in hidden representations
+                    hidden.append(x)
+
+        if (output_hidden_states):
+            return x, hidden
+        else:
+            return x
 
 
 class Classifier(sb.nnet.containers.Sequential):
