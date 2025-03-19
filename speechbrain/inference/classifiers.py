@@ -88,7 +88,10 @@ class EncoderClassifier(Pretrained):
         normalize : bool
             If True, it normalizes the embeddings with the statistics
             contained in mean_var_norm_emb.
-
+        output_hidden_states : bool
+            If True, asks model to return hidden representations as well
+            as final embeddings, as a tuple (embedding, hidden), with
+            hidden a list of Tensors.
         Returns
         -------
         torch.Tensor

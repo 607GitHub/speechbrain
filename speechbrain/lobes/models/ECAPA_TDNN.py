@@ -526,6 +526,10 @@ class ECAPA_TDNN(torch.nn.Module):
             Tensor of shape (batch, time, channel).
         lengths : torch.Tensor
             Corresponding relative lengths of inputs.
+        output_hidden_states : bool
+            If True, returns hidden representations of each block as well
+            as final embeddings, as a tuple (embedding, hidden), with
+            hidden a list of Tensors.
 
         Returns
         -------
