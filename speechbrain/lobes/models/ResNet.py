@@ -445,6 +445,7 @@ class ResNet(nn.Module):
         sg = torch.sqrt((torch.sum((x**2) * w, dim=2) - mu**2).clamp(min=1e-5))
         x = torch.cat([mu, sg], dim=1)
         x = self.norm_stats(x)
+        if output_hidden_states: hidden.append(x)
 
         x = self.fc_embed(x)
         x = self.norm_embed(x)

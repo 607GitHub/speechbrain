@@ -546,14 +546,17 @@ class ECAPA_TDNN(torch.nn.Module):
             except TypeError:
                 x = layer(x)
             xl.append(x)
+        if output_hidden_states: hidden = xl
 
         # Multi-layer feature aggregation
         x = torch.cat(xl[1:], dim=1)
         x = self.mfa(x)
+        if output_hidden_states: hidden.append(x)
 
         # Attentive Statistical Pooling
         x = self.asp(x, lengths=lengths)
         x = self.asp_bn(x)
+        if output_hidden_states: hidden.append(x)
 
         # Final linear transformation
         x = self.fc(x)
@@ -561,7 +564,7 @@ class ECAPA_TDNN(torch.nn.Module):
         x = x.transpose(1, 2)
 
         if (output_hidden_states):
-            return x, xl
+            return x, hidden
         else:
             return x
 

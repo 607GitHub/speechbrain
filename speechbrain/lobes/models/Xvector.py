@@ -118,11 +118,10 @@ class Xvector(torch.nn.Module):
             except TypeError:
                 x = layer(x)
             if output_hidden_states:
-                if (x.shape[1] > 1): # Don't include pooled representation or final embedding in hidden representations
-                    hidden.append(x)
+                hidden.append(x)
 
         if (output_hidden_states):
-            return x, hidden
+            return x, hidden[:-1] # Don't return final embedding twice
         else:
             return x
 
