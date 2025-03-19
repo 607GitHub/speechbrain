@@ -92,7 +92,7 @@ class EncoderClassifier(Pretrained):
             If True, asks model to return hidden representations as well
             as final embeddings, as a tuple (embedding, hidden), with
             hidden a list of Tensors.
-            
+
         Returns
         -------
         torch.Tensor
@@ -113,7 +113,10 @@ class EncoderClassifier(Pretrained):
         # Computing features and embeddings
         feats = self.mods.compute_features(wavs)
         feats = self.mods.mean_var_norm(feats, wav_lens)
-        embeddings = self.mods.embedding_model(feats, wav_lens, output_hidden_states)
+        if (output_hidden_states): # Not all models have this argument implemented; only throw exception when it is set to True
+            embeddings = self.mods.embedding_model(feats, wav_lens, output_hidden_states)
+        else:
+            embeddings = self.mods.embedding_model(feats, wav_lens)
         if normalize:
             embeddings = self.hparams.mean_var_norm_emb(
                 embeddings, torch.ones(embeddings.shape[0], device=self.device)
