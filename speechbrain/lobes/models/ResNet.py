@@ -401,7 +401,7 @@ class ResNet(nn.Module):
             layers.append(BasicBlock(out_channels, out_channels))
         return nn.Sequential(*layers)
 
-    def forward(self, x, lengths=None):
+    def forward(self, x, lengths=None, output_hidden_states=False):
         """Returns the embedding vector.
 
         Arguments
@@ -410,6 +410,10 @@ class ResNet(nn.Module):
             Tensor of shape (batch, time, channel).
         lengths : torch.Tensor
             Corresponding relative lengths of the inputs.
+        output_hidden_states : bool
+            If True, returns hidden representations of each block as well
+            as final embeddings, as a tuple (embedding, hidden), with
+            hidden a list of Tensors.
 
         Returns
         -------
@@ -422,10 +426,15 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.activation1(x)
 
+        if output_hidden_states: hidden = []
         x = self.layer1(x)
+        if output_hidden_states: hidden.append(x)
         x = self.layer2(x)
+        if output_hidden_states: hidden.append(x)
         x = self.layer3(x)
+        if output_hidden_states: hidden.append(x)
         x = self.layer4(x)
+        if output_hidden_states: hidden.append(x)
 
         x = x.transpose(2, 3)
         x = x.flatten(1, 2)
@@ -436,11 +445,15 @@ class ResNet(nn.Module):
         sg = torch.sqrt((torch.sum((x**2) * w, dim=2) - mu**2).clamp(min=1e-5))
         x = torch.cat([mu, sg], dim=1)
         x = self.norm_stats(x)
+        if output_hidden_states: hidden.append(x)
 
         x = self.fc_embed(x)
         x = self.norm_embed(x)
 
-        return x
+        if (output_hidden_states):
+            return x, hidden
+        else:
+            return x
 
 
 class Classifier(torch.nn.Module):

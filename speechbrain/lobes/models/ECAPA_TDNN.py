@@ -517,7 +517,7 @@ class ECAPA_TDNN(torch.nn.Module):
             kernel_size=1,
         )
 
-    def forward(self, x, lengths=None):
+    def forward(self, x, lengths=None, output_hidden_states=False):
         """Returns the embedding vector.
 
         Arguments
@@ -526,6 +526,10 @@ class ECAPA_TDNN(torch.nn.Module):
             Tensor of shape (batch, time, channel).
         lengths : torch.Tensor
             Corresponding relative lengths of inputs.
+        output_hidden_states : bool
+            If True, returns hidden representations of each block as well
+            as final embeddings, as a tuple (embedding, hidden), with
+            hidden a list of Tensors.
 
         Returns
         -------
@@ -542,20 +546,27 @@ class ECAPA_TDNN(torch.nn.Module):
             except TypeError:
                 x = layer(x)
             xl.append(x)
+        if output_hidden_states: hidden = xl
 
         # Multi-layer feature aggregation
         x = torch.cat(xl[1:], dim=1)
         x = self.mfa(x)
+        if output_hidden_states: hidden.append(x)
 
         # Attentive Statistical Pooling
         x = self.asp(x, lengths=lengths)
         x = self.asp_bn(x)
+        if output_hidden_states: hidden.append(x)
 
         # Final linear transformation
         x = self.fc(x)
 
         x = x.transpose(1, 2)
-        return x
+
+        if (output_hidden_states):
+            return x, hidden
+        else:
+            return x
 
 
 class Classifier(torch.nn.Module):
